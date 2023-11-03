@@ -9,8 +9,8 @@ find_package(Catch2 REQUIRED)
 
 add_executable(mqtt2 main.cpp)
 
-target_link_libraries(mqtt2 PahoMqttCpp::paho-mqttpp3-static)
+target_link_libraries(mqtt2 PRIVATE PahoMqttCpp::paho-mqttpp3-static)
 
 add_subdirectory(src/modules)
 
-target_link_libraries(mqtt2 mqtt_client)
+target_link_libraries(mqtt2 PRIVATE mqtt_client)

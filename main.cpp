@@ -11,6 +11,27 @@ auto constexpr PASS       = "123Hamster";
 auto constexpr TOPIC      = "testtopic";
 
 void
+connect_my_client()
+{
+    auto clientSettings = my_mqtt::MqttSettings{ USERNAME, PASS, CLIENT_ID, SERVER_URI,
+                                                 true,     true, 20,        my_mqtt::MqttSettings::SSLVersion::TLSV1_2 };
+    auto client         = my_mqtt::MqttClient{ clientSettings };
+
+    try {
+        client.Connect()->wait();
+        std::cout << "connected" << std::endl;
+
+        client.Publish(TOPIC, "hello from c++")->wait();
+        std::cout << "published" << std::endl;
+
+        client.GetClient().disconnect()->wait();
+        std::cout << "disconnected" << std::endl;
+    } catch (const mqtt::exception &exc) {
+        std::cerr << "error: " << exc << std::endl;
+    }
+}
+
+void
 connect()
 {
     auto aclient = mqtt::async_client(SERVER_URI, CLIENT_ID);
@@ -61,7 +82,7 @@ sync_client()
 int
 main()
 {
-    connect();
+    connect_my_client();
 
     return 0;
 }

@@ -62,7 +62,7 @@ class MqttSettings : public MqttSettingsInterface {
         options.set_ssl(std::move(sslOpts));
         options.set_keep_alive_interval(keepAliveInterval);
         options.set_automatic_reconnect(automaticReconnect);
-        options.set_clean_start(startCleanSession);
+        options.set_clean_session(startCleanSession);
 
         return options;
     }
@@ -84,11 +84,24 @@ class MqttSettings : public MqttSettingsInterface {
 class MqttClient {
   public:
     using ClientT = mqtt::async_client;
+    using TopicT  = mqtt::topic;
 
-    explicit constexpr MqttClient(const MqttSettingsInterface &settings) { }
+    explicit MqttClient(const MqttSettingsInterface &settings)
+      : client{ settings.getServerUri(), settings.getClientId() }
+      , connectionOptions{ settings.getConnectionOptions() }
+    { }
+
+    [[nodiscard]] ClientT &GetClient() { return client; }
+    [[nodiscard]] auto     Connect() { return client.connect(connectionOptions); }
+    [[nodiscard]] decltype(auto)                   Publish(const StrT &topic, const StrT &payload)
+    {
+        auto message = mqtt::message_ptr_builder().topic(topic).payload(payload).finalize();
+        return client.publish(message);
+    }
 
   private:
-    ClientT client;
+    ClientT      client;
+    ConnOptionsT connectionOptions;
 };
 
 }   // namespace my_mqtt
